@@ -4,10 +4,12 @@ import (
 	"log"
 
 	"github.com/jusxtdev/concurrent-file-download/cmd"
+	"github.com/jusxtdev/concurrent-file-download/internal/controller"
 )
 
 func main(){
-	cli := cmd.NewCLIApplication()
+	controller := controller.NewController()
+	cli := cmd.NewCLIApplication(controller)
 	cli.Setup()
 	err := cli.Loop()
 	if err != nil {

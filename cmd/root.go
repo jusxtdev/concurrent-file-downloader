@@ -8,9 +8,13 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/jusxtdev/concurrent-file-download/internal/controller"
 )
 
-type CLI struct {}
+type CLI struct {
+	controller *controller.Controller
+}
 
 type Option int
 
@@ -25,19 +29,22 @@ var choices = map[Option]string{
 
 var ErrInvalidChoice = fmt.Errorf("Invalid choice")
 
-func NewCLIApplication() *CLI{
-	return &CLI{}
+func NewCLIApplication(c *controller.Controller) *CLI{
+	return &CLI{
+		controller: c,
+	}
 }
 
-func (c *CLI) Setup(){
+func (cli *CLI) Setup(){
 	fmt.Println("Started CLI")
 }
 
-func (c *CLI) Loop() error {
-	//TODO implement re-prompt on EOF and non-int values
-	// idea - the numProcessed returned from fmt.Scanln return 0 if the input is either EOF or string, we can use that num value to create custom errors and use those to match in the Loop
-	// but Scanln returns 1 for float values too and then raises and error
+// CLI application loop
+func (cli *CLI) Loop() error {
 	for {
+		// print menu and take int input for choice
+		// reprompt on invalid int choice or string input
+		// EOF ignored for now
 		choice, err := menu()
 		if err != nil {
 			if errors.Is(err, ErrInvalidChoice){
@@ -47,9 +54,10 @@ func (c *CLI) Loop() error {
 				return err
 			}
 		}
+
 		switch choice {
 		case int(NewURL):
-			fmt.Println(choice)
+			cli.controller.NewURL()
 		case int(Exit):
 			fmt.Println(choice)
 			return nil
