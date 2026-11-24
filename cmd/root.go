@@ -57,7 +57,14 @@ func (cli *CLI) Loop() error {
 
 		switch choice {
 		case int(NewURL):
-			cli.controller.NewURL()
+			err := cli.controller.NewURL()
+			if err != nil {
+				if errors.Is(err, controller.ErrInvalidURL){
+					fmt.Printf("ERR : %s\n", err.Error())
+				} else {
+					return err
+				}
+			}
 		case int(Exit):
 			fmt.Println(choice)
 			return nil
