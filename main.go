@@ -7,7 +7,7 @@ import (
 	"github.com/jusxtdev/concurrent-file-download/internal/controller"
 )
 
-func main(){
+func main() {
 	controller := controller.NewController()
 	cli := cmd.NewCLIApplication(controller)
 	cli.Setup()

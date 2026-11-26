@@ -7,20 +7,15 @@ import (
 	"os"
 	"strings"
 
+	"github.com/jusxtdev/concurrent-file-download/internal/chunks"
 	"github.com/jusxtdev/concurrent-file-download/internal/helper"
 	"github.com/jusxtdev/concurrent-file-download/internal/metadata"
+	url_pkg "github.com/jusxtdev/concurrent-file-download/internal/url"
 )
 
-type URL struct {
-	Url string
-	TotalFileSize float64
-	Filename string
-	ContentType string
-	AcceptRanges string
-}
 
 type Controller struct {
-	URL *URL
+	URL *url_pkg.URL
 }
 
 var (
@@ -47,16 +42,30 @@ func (c *Controller) NewURL() error {
 		return ErrInvalidURL
 	}
 
-	// update the controller.URL
-	c.URL = &URL{
-		Url: url,
-	} 
-
 	// check metadata, whether URL has `Range request support`
-	info, err := metadata.FetchMetadata(url)
+	info, downloadType, err := metadata.FetchMetadata(url)
 	if err != nil {
 		return err
 	}
-	fmt.Println(info)
+
+	switch downloadType {
+	case metadata.ConcurrentDownload:
+		fmt.Println("The URL supports Range request, will use concurrent download")
+	case metadata.SingleDownload:
+		fmt.Println("The URL doesn't support Range request, will use single download")
+	case metadata.NoFileSizeProvided:
+		fmt.Println("The URL supports Range request but doesn't provide TotalFileSize, will use single download")
+	}
+
+	// update the controller.URL
+	c.URL = &url_pkg.URL{
+		Url: url,
+		TotalFileSize: info.TotalFileSize,
+		Filename: info.Filename,
+		ContentType: info.ContentType,
+		AcceptRanges: info.AcceptRanges,
+	} 
+	// fmt.Println(c.URL.TotalFileSize)
+	chunks.ChunkURL(c.URL)
 	return nil
 }
