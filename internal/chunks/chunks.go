@@ -18,9 +18,7 @@ type Chunk struct {
 
 func ChunkURL(urlInfo *url_pkg.URL) {
 	baseSize := urlInfo.TotalFileSize / int64(NoOfChunks)
-	// fmt.Println("Base size", baseSize)
-	// fmt.Println("Total size", urlInfo.TotalFileSize)
-	
+
 	// create chunks
 	var chunks []Chunk = make([]Chunk, NoOfChunks)
 	for i := 0; i < NoOfChunks; i++ {

@@ -36,7 +36,6 @@ func NewCLIApplication(c *controller.Controller) *CLI{
 }
 
 func (cli *CLI) Setup(){
-	fmt.Println("Started CLI")
 }
 
 // CLI application loop
@@ -66,7 +65,6 @@ func (cli *CLI) Loop() error {
 				}
 			}
 		case int(Exit):
-			fmt.Println(choice)
 			return nil
 		default:
 			fmt.Println(ErrInvalidChoice.Error())

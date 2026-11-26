@@ -65,7 +65,6 @@ func (c *Controller) NewURL() error {
 		ContentType: info.ContentType,
 		AcceptRanges: info.AcceptRanges,
 	} 
-	// fmt.Println(c.URL.TotalFileSize)
 	chunks.ChunkURL(c.URL)
 	return nil
 }
