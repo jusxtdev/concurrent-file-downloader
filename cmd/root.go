@@ -5,11 +5,13 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 	"strings"
 
 	"github.com/jusxtdev/concurrent-file-download/internal/controller"
+	"github.com/jusxtdev/concurrent-file-download/internal/download"
 )
 
 type CLI struct {
@@ -72,6 +74,14 @@ func (cli *CLI) Loop() error {
 	}
 }
 
+func (cli *CLI)ShutDown() error {
+	err := cleanupTemp()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 /* = = = = = = = = = = = = = = = = = = = */
 func menu() (int, error) {
 	for option, choice := range choices{
@@ -90,4 +100,54 @@ func menu() (int, error) {
 		return 0, ErrInvalidChoice
 	}
 	return choice, nil
+}
+
+func cleanupTemp() error{
+	// get list of dirs in temp
+	entries, err := os.ReadDir(download.TempFolderBase)
+	if err != nil {
+		return err
+	}
+	var dirs []string
+	for _, entry := range entries {
+		if entry.IsDir(){
+			dirs = append(dirs, entry.Name())
+		}
+	}
+
+	// check which sub-dir is empty
+	var dirsToDelete []string
+	for _, subdir := range dirs {
+		dirpath := fmt.Sprintf("%s/%s", download.TempFolderBase, subdir)
+		empty, err := isDirEmpty(dirpath)
+		if err != nil {
+			return err
+		}
+		if empty {
+			dirsToDelete = append(dirsToDelete, dirpath)
+		}
+	}
+	// delete that dir 
+	for _, dirPath := range dirsToDelete {
+		err := os.RemoveAll(dirPath)
+		if err != nil {
+			return err
+		}
+	}
+	
+	return nil
+}
+
+func isDirEmpty(path string) (bool, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return false, err
+	}
+	defer f.Close()
+
+	_, err = f.Readdirnames(1)
+	if errors.Is(err, io.EOF) {
+		return true, nil
+	}
+	return false, nil
 }

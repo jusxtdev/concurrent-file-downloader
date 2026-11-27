@@ -16,4 +16,8 @@ func main() {
 		log.Fatal(err)
 	}
 	// TODO :- add a cleanup function which deletes empty folders in `temp/`
+	err = cli.ShutDown()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
