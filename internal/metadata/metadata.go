@@ -4,6 +4,7 @@ package metadata
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -62,7 +63,8 @@ func FetchMetadata(url string) (Info, DownloadType, error) {
 		return Info{}, SingleDownload, nil
 	}
 
-	info.Filename = resp.Header.Get("Content-Disposition")
+	contentDispositionHeader := resp.Header.Get("Content-Disposition")
+	info.Filename = extractFilenameFromContentDisposition(contentDispositionHeader)
 	info.ContentType = resp.Header.Get("Content-Type")
 
 	return info, ConcurrentDownload, nil
@@ -125,4 +127,19 @@ func GetFileSize(url string) (int64, error) {
 	}
 
 	return resp.ContentLength, nil
+}
+
+func extractFilenameFromContentDisposition(header string) string {
+	// process content length header to extract the filename
+	// from header="attachment; filename", we want "filename"
+	var filename string
+	if strings.HasPrefix(header, "attachment;") {
+		split := strings.Split(header, ";")
+		// split[1] is "filename=<file1>"
+		filenameQuoted := strings.TrimSpace(strings.Split(split[1], "=")[1])
+		filename = strings.Trim(filenameQuoted, `"`)
+	} else {
+		filename = header
+	}
+	return filename
 }
