@@ -2,8 +2,6 @@
 package chunks
 
 import (
-	"fmt"
-
 	url_pkg "github.com/jusxtdev/concurrent-file-download/internal/url"
 )
 
@@ -16,7 +14,7 @@ type Chunk struct {
 	Size int
 }
 
-func ChunkURL(urlInfo *url_pkg.URL) {
+func ChunkURL(urlInfo *url_pkg.URL) []Chunk {
 	baseSize := urlInfo.TotalFileSize / int64(NoOfChunks)
 
 	// create chunks
@@ -36,8 +34,5 @@ func ChunkURL(urlInfo *url_pkg.URL) {
 			Size: chunkSize,
 		}
 	}
-
-	for i := 0; i < NoOfChunks; i++ {
-		fmt.Printf("%d : Start=%d -- End=%d -- Size=%d\n", chunks[i].ChunkId, chunks[i].StartByte, chunks[i].EndByte, chunks[i].Size)
-	}
+	return chunks
 }

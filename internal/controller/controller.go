@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/jusxtdev/concurrent-file-download/internal/chunks"
+	"github.com/jusxtdev/concurrent-file-download/internal/download"
 	"github.com/jusxtdev/concurrent-file-download/internal/helper"
 	"github.com/jusxtdev/concurrent-file-download/internal/metadata"
 	url_pkg "github.com/jusxtdev/concurrent-file-download/internal/url"
@@ -65,6 +66,21 @@ func (c *Controller) NewURL() error {
 		ContentType: info.ContentType,
 		AcceptRanges: info.AcceptRanges,
 	} 
-	chunks.ChunkURL(c.URL)
+
+	// chunk the url
+	urlChunks := chunks.ChunkURL(c.URL)
+	fmt.Println(len(urlChunks))
+	// setup the temp chunk download directory
+	err = download.SetupDownloadDir()
+	if err != nil {
+		return err
+	} 
+	// start download (separate goroutine) on each chunk
+	err = download.StartDownload(urlChunks, *c.URL)
+	if err != nil {
+		return err
+	}
+	// wait for downloads to complete
+	// verify file size (and checksum in future) 
 	return nil
 }
