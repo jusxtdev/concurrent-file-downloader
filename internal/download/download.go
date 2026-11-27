@@ -59,7 +59,6 @@ func createFolderForFile(filename string) error {
 
 	err := os.Mkdir(folderName, 0755)
 	if err != nil {
-		// TODO Handle duplicate files
 		return err
 	}
 	return nil

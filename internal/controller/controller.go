@@ -51,26 +51,30 @@ func (c *Controller) NewURL() error {
 
 	switch downloadType {
 	case metadata.ConcurrentDownload:
-		fmt.Println("The URL supports Range request, will use concurrent download")
+		// update the controller.URL
+		c.URL = &url_pkg.URL{
+			Url: url,
+			TotalFileSize: info.TotalFileSize,
+			Filename: info.Filename,
+			ContentType: info.ContentType,
+			AcceptRanges: info.AcceptRanges,
+		} 
+		concurrentDownload(c)
 	case metadata.SingleDownload:
 		fmt.Println("The URL doesn't support Range request, will use single download")
 	case metadata.NoFileSizeProvided:
 		fmt.Println("The URL supports Range request but doesn't provide TotalFileSize, will use single download")
 	}
 
-	// update the controller.URL
-	c.URL = &url_pkg.URL{
-		Url: url,
-		TotalFileSize: info.TotalFileSize,
-		Filename: info.Filename,
-		ContentType: info.ContentType,
-		AcceptRanges: info.AcceptRanges,
-	} 
 
+	return nil
+}
+
+func concurrentDownload(c *Controller) error {
 	// chunk the url
 	urlChunks := chunks.ChunkURL(c.URL)
 	// setup the temp chunk download directory
-	err = download.SetupDownloadDir()
+	err := download.SetupDownloadDir()
 	if err != nil {
 		return err
 	} 
@@ -79,7 +83,7 @@ func (c *Controller) NewURL() error {
 	if err != nil {
 		return err
 	}
-	// wait for downloads to complete
-	// verify file size (and checksum in future) 
+	// merge chunk files on successfull download 
+	// verify final file size (and checksum in future) 
 	return nil
 }
