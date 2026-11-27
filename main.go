@@ -15,4 +15,5 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	// TODO :- add a cleanup function which deletes empty folders in `temp/`
 }

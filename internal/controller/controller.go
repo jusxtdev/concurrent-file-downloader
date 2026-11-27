@@ -69,7 +69,6 @@ func (c *Controller) NewURL() error {
 
 	// chunk the url
 	urlChunks := chunks.ChunkURL(c.URL)
-	fmt.Println(len(urlChunks))
 	// setup the temp chunk download directory
 	err = download.SetupDownloadDir()
 	if err != nil {
