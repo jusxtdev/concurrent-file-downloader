@@ -3,6 +3,7 @@
 package download
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"sync"
@@ -14,6 +15,7 @@ import (
 )
 
 var TempFolderBase = "temp"
+var ChunkTempExtension = ".tmp"
 
 // function to setup the temporary download directory
 func SetupDownloadDir() error {
@@ -34,32 +36,39 @@ func SetupDownloadDir() error {
 // workerCount is the same as no. of chunks
 func StartDownload(chunks []chunks.Chunk, url url_pkg.URL) error{
 	// create a temp folder for this file indside the temp folder created by setup
-	err := createFolderForFile(url.Filename)
+	folderName, err := createFolderForFile(url.Filename)
 	if err != nil {
 		return err
 	}
 
 	workerCount := len(chunks)
 
+	errChan := make(chan error, workerCount)
 	var wg *sync.WaitGroup = new(sync.WaitGroup)
 	for i := 0; i < workerCount; i++ {
 		chunk := chunks[i]
+		chunkPath := fmt.Sprintf("%s/%d%s", folderName, chunks[i].ChunkId, ChunkTempExtension)
 		wg.Go(func() {
-			worker.DownloadChunk(chunk)
+			worker.DownloadChunk(chunk, url, chunkPath, errChan)
 		})
 	}
 	wg.Wait()
-	return nil
+	close(errChan)
+	var chanErrors []error
+	for err := range errChan {
+		chanErrors = append(chanErrors , err)
+	}
+	return errors.Join(chanErrors...)
 }
 
-func createFolderForFile(filename string) error {
+func createFolderForFile(filename string) (string, error) {
 	// Format: YYYYMMDD_HHMMSS (e.g., 20261127_194700)
 	timestamp := time.Now().Format("20060102_150405")
 	folderName := fmt.Sprintf("%s/%s_%s", TempFolderBase, filename, timestamp)
 
 	err := os.Mkdir(folderName, 0755)
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return folderName, nil
 }
