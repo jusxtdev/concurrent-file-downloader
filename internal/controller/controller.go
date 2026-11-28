@@ -84,6 +84,7 @@ func concurrentDownload(c *Controller) error {
 		return err
 	}
 	// merge chunk files on successfull download 
+	// merge.MergeChunks()
 	// verify final file size (and checksum in future) 
 	return nil
 }
