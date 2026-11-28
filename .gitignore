@@ -32,3 +32,6 @@ Thumbs.db
 
 # todos
 tasks.txt
+
+# Temp files
+/temp/
